@@ -10,12 +10,6 @@ library(stringr)
 # A= Agriculteurs, pêcheurs
 # ONQ "Ouvriers ou employés non qualifiés"
 
-vars <- table_cores$anciens_noms
-vars_select <- paste(vars, collapse = ", ")
-
-# Afficher la liste
-print(vars_select)
-
 ################################################################################
 #                         Choix de l'édition                                   #
 ################################################################################
@@ -72,12 +66,16 @@ rename_columns <- function(df, table_cores) {
 df_ACM <- rename_columns(df_ACM, table_cores)
 
 #Retraitement des variables occupation pour ne conserver que le niveau agrégé
+#Supression des lignes inutilisables
 
 df_ACM <- df_ACM %>%
-  filter(!csp%in% c(66666, 77777, 88888, 99999)) %>%
-  filter(!csp_père %in% c(66, 77, 88, 99)) %>%
-  filter(!csp_mère %in% c( 66,77, 88, 99)) %>%
-  mutate(csp= str_extract(as.character(csp), "^\\d")) 
+  filter(
+    !csp %in% c(66666, 77777, 88888, 99999),  # toujours supprimer ces valeurs
+    !(genre == 2 & csp_père %in% c(66, 77, 88, 99)),  # condition spécifique au père
+    !(genre == 1 & csp_mère %in% c(66, 77, 88, 99))   # condition spécifique à la mère
+  ) %>%
+  mutate(csp = str_extract(as.character(csp), "^\\d"))  # extraire le 1er chiffre
+
 
 ################################################################################
 # Regroupement en 6 grandes CSP                                               #
