@@ -70,12 +70,13 @@ df_ACM <- rename_columns(df_ACM, table_cores)
 
 df_ACM <- df_ACM %>%
   filter(
-    !csp %in% c(66666, 77777, 88888, 99999),  # toujours supprimer ces valeurs
-    !(genre == 2 & csp_père %in% c(66, 77, 88, 99)),  # condition spécifique au père
-    !(genre == 1 & csp_mère %in% c(66, 77, 88, 99))   # condition spécifique à la mère
+    !csp %in% c(66666, 77777, 88888, 99999),                          # toujours supprimer ces valeurs
+    !(genre == 2 & (is.na(csp_père) | csp_père %in% c(66, 77, 88, 99))),  # pour les femmes : virer NA et modalités à exclure
+    !(genre == 1 & (is.na(csp_mère) | csp_mère %in% c(66, 77, 88, 99)))   # pour les hommes : idem pour csp_mère
   ) %>%
-  mutate(csp = str_extract(as.character(csp), "^\\d"))  # extraire le 1er chiffre
+  mutate(csp = str_extract(as.character(csp), "^\\d"))
 
+df_ACM <- df_ACM %>%filter(genre != 9)
 
 ################################################################################
 # Regroupement en 6 grandes CSP                                               #
