@@ -33,16 +33,19 @@ print(df_summary)
 
 # Table de correspondance variables/ noms de variables explicites
 table_cores <- tibble(
-  anciens_noms = c("idno","gndr", "cntry",  "anweight", "iscoco", "occf14", "occm14"),
-  nouveaux_noms = c("identifiant","genre", "pays",  "poids", "csp", "csp_père", "csp_mère")
+  anciens_noms = c("idno","gndr", "cntry",  "anweight", "iscoco", "occf14",
+                   "occm14","edulvla","edulvlfa","edulvlma","agea"),
+  nouveaux_noms = c("identifiant","genre", "pays",  "poids", "csp", "csp_père",
+                    "csp_mère","education", "education_pere", "education_mere","age")
 )
 
 df_ACM_1 <- ESS_Theme_Socio_demographics %>%
-  select(idno, cntry, anweight, iscoco, occf14, occm14, edition) %>%
+  select(idno, cntry, anweight, iscoco, occf14, occm14, edulvla, edulvlfa, 
+         edulvlma, edition) %>%
   filter(edition==6.7)
 
 df_ACM_2 <- ESS_Theme_Personal_and_household_characteristics%>%
-  select(idno,gndr, edition)%>%
+  select(idno,gndr,agea, edition)%>%
   filter(edition==6.7)
 
 #On regroupe les données par identifiant répondant
@@ -76,8 +79,18 @@ df_ACM <- df_ACM %>%
   ) %>%
   mutate(csp = str_extract(as.character(csp), "^\\d"))
 
-df_ACM <- df_ACM %>%filter(genre != 9)
+library(dplyr)
 
+df_ACM <- df_ACM %>%
+  filter(
+    genre != 9,
+    !education       %in% c(55, 77,88, 99),
+    !education_pere  %in% c(55,77, 88, 99),
+    !education_mere  %in% c(55,77, 88, 99),
+    age    != 999
+  )
+
+  
 ################################################################################
 # Regroupement en 6 grandes CSP                                               #
 ###############################################################################
@@ -127,6 +140,19 @@ df_ACM <- df_ACM %>%
       genre == 2,
       paste(csp, csp_père, "M", sep = "_"),
       paste(csp, csp_mère, "F", sep = "_")
+    )
+  )
+
+library(dplyr)
+
+df_ACM <- df_ACM %>%
+  mutate(
+    age_cat = case_when(
+      age >= 14 & age <= 25 ~ "14-25",
+      age >= 26 & age <= 40 ~ "26-40",
+      age >= 41 & age <= 65 ~ "41-65",
+      age > 65             ~ ">65",
+      TRUE                 ~ NA_character_
     )
   )
 
