@@ -6,9 +6,9 @@ library(stringr)
 
 # "C"= Professions de cadres et professions libérales
 #"PI" = Professions intermédiaires
-# "OQ"= "Ouvriers ou employés qualifiés"
-# A= Agriculteurs, pêcheurs
+# "OQ"= "Ouvriers ou employés qualifiés, agriculteurs"
 # ONQ "Ouvriers ou employés non qualifiés"
+# Agriculteurs pêcheurs
 
 ################################################################################
 #                         Choix de l'édition                                   #
@@ -79,7 +79,6 @@ df_ACM <- df_ACM %>%
   ) %>%
   mutate(csp = str_extract(as.character(csp), "^\\d"))
 
-library(dplyr)
 
 df_ACM <- df_ACM %>%
   filter(
@@ -97,7 +96,19 @@ df_ACM <- df_ACM %>%
 
 # Dictionnaire de correspondance
 cores_enquete <- c(
-  "1"= "c",
+  "1"= "C",
+  "2"= "C",
+  "3"= "PI",
+  "4"= "C",
+  "5"= "OQ",
+  "6"= "OQ",
+  "7"= "OQ",
+  "8"= "OQ",
+  "9"= "ONQ"
+)
+
+cores_enquete_avec_A <- c(
+  "1"= "C",
   "2"= "C",
   "3"= "PI",
   "4"= "C",
@@ -113,7 +124,7 @@ cores_parents <- c(
   "2"= "C",
   "3"= "PI",
   "4"= "C",
-  "5"= "OQ ",
+  "5"= "OQ",
   "6"= "OQ" ,
   "7"=  "ONQ",
   "8"= "PI"
@@ -122,6 +133,7 @@ cores_parents <- c(
 df_ACM <- df_ACM %>%
   mutate(csp_père = recode(as.character(csp_père), !!!cores_parents))%>%
   mutate(csp_mère = recode(as.character(csp_mère), !!!cores_parents))%>%
+  mutate(csp_avec_A = recode(as.character(csp), !!!cores_enquete_avec_A))  %>%
   mutate(csp = recode(as.character(csp), !!!cores_enquete))
 
 ################################################################################
@@ -143,7 +155,21 @@ df_ACM <- df_ACM %>%
     )
   )
 
-library(dplyr)
+df_ACM <- df_ACM %>%
+  mutate(
+    # Nettoyage des espaces dans les variables texte
+    csp = str_trim(education),
+    csp_père = str_trim(education_pere),
+    csp_mère = str_trim(education_mere),
+    
+    # Création de la variable conditionnelle
+    mobilite_educ = if_else(
+      genre == 2,
+      paste(education, education_pere, "M", sep = "_"),
+      paste(education, education_mere, "F", sep = "_")
+    )
+  )
+
 
 df_ACM <- df_ACM %>%
   mutate(
