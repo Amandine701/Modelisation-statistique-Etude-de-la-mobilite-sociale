@@ -45,7 +45,7 @@ df_clean <- df_ACM_essai %>%
 
 # Définition des variables actives
 vars_actives <- c("mobilite")
-vars_supp <- c("pays", "education_pere", "education_mere")
+vars_supp <- c("pays", "education")
 
 # Combiner les variables actives et supplémentaires
 vars_mca <- c(vars_actives, vars_supp)
