@@ -99,7 +99,7 @@ cores_enquete <- c(
   "1"= "C",
   "2"= "C",
   "3"= "PI",
-  "4"= "C",
+  "4"= "OQ",
   "5"= "OQ",
   "6"= "OQ",
   "7"= "OQ",
@@ -157,11 +157,6 @@ df_ACM <- df_ACM %>%
 
 df_ACM <- df_ACM %>%
   mutate(
-    # Nettoyage des espaces dans les variables texte
-    csp = str_trim(education),
-    csp_père = str_trim(education_pere),
-    csp_mère = str_trim(education_mere),
-    
     # Création de la variable conditionnelle
     mobilite_educ = if_else(
       genre == 2,
