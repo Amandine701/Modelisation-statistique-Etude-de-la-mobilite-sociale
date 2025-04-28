@@ -73,9 +73,9 @@ df_ACM <- rename_columns(df_ACM, table_cores)
 
 df_ACM <- df_ACM %>%
   filter(
-    !csp %in% c(66666, 77777, 88888, 99999),                          # toujours supprimer ces valeurs
-    !(genre == 2 & (is.na(csp_père) | csp_père %in% c(66, 77, 88, 99))),  # pour les femmes : virer NA et modalités à exclure
-    !(genre == 1 & (is.na(csp_mère) | csp_mère %in% c(66, 77, 88, 99)))   # pour les hommes : idem pour csp_mère
+    !csp %in% c(66666, 77777, 88888, 99999),                          
+    !(genre == 1 & (is.na(csp_père) | csp_père %in% c(66, 77, 88, 99))),  # pour les hommes 
+    !(genre == 2 & (is.na(csp_mère) | csp_mère %in% c(66, 77, 88, 99)))   # pour les femmes 
   ) %>%
   mutate(csp = str_extract(as.character(csp), "^\\d"))
 
@@ -83,7 +83,7 @@ df_ACM <- df_ACM %>%
 df_ACM <- df_ACM %>%
   filter(
     genre != 9,
-    !education       %in% c(55, 77,88, 99),
+    !education       %in% c(55,77,88, 99),
     !education_pere  %in% c(55,77, 88, 99),
     !education_mere  %in% c(55,77, 88, 99),
     age    != 999
@@ -127,7 +127,7 @@ cores_parents <- c(
   "5"= "OQ",
   "6"= "OQ" ,
   "7"=  "ONQ",
-  "8"= "PI"
+  "8"= "C"
 )
 
 df_ACM <- df_ACM %>%
@@ -149,19 +149,9 @@ df_ACM <- df_ACM %>%
     
     # Création de la variable conditionnelle
     mobilite = if_else(
-      genre == 2,
+      genre == 1,
       paste(csp, csp_père, "M", sep = "_"),
       paste(csp, csp_mère, "F", sep = "_")
-    )
-  )
-
-df_ACM <- df_ACM %>%
-  mutate(
-    # Création de la variable conditionnelle
-    mobilite_educ = if_else(
-      genre == 2,
-      paste(education, education_pere, "M", sep = "_"),
-      paste(education, education_mere, "F", sep = "_")
     )
   )
 
