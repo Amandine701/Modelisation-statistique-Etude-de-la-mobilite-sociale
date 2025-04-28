@@ -7,9 +7,8 @@ library(stringr)
 # "C"= Professions de cadres et professions libérales
 #"PI" = Professions intermédiaires
 # "OQ"= "Ouvriers ou employés qualifiés, agriculteurs"
-# E = employés
 # ONQ "Ouvriers ou employés non qualifiés"
-# A Agriculteurs pêcheurs
+# Agriculteurs pêcheurs
 
 ################################################################################
 #                         Choix de l'édition                                   #
@@ -20,12 +19,9 @@ df_summary <- ESS_Theme_Socio_demographics %>%
   summarise(
     nb_lignes = n(),
     nb_idno_uniques = n_distinct(idno),
-    na_isco08= sum(is.na(isco08)),
-    na_occf14b = sum(is.na(occf14b)),
-    na_occm14b = sum(is.na(occm14b)),
-    education = sum(is.na(eisced)),
-    education_pere=sum(is.na(eiscedf)),
-    education_mere=sum(is.na(eiscedm)),
+    na_iscoco = sum(is.na(iscoco)),
+    na_occf14 = sum(is.na(occf14)),
+    na_occm14 = sum(is.na(occm14))
   ) %>%
   arrange(edition)
 
@@ -37,20 +33,20 @@ print(df_summary)
 
 # Table de correspondance variables/ noms de variables explicites
 table_cores <- tibble(
-  anciens_noms = c("idno","gndr", "cntry",  "anweight", "isco08", "occf14b",
-                   "occm14b","eisced","eiscedf","eiscedm","agea"),
+  anciens_noms = c("idno","gndr", "cntry",  "anweight", "iscoco", "occf14",
+                   "occm14","edulvla","edulvlfa","edulvlma","agea"),
   nouveaux_noms = c("identifiant","genre", "pays",  "poids", "csp", "csp_père",
                     "csp_mère","education", "education_pere", "education_mere","age")
 )
 
 df_ACM_1 <- ESS_Theme_Socio_demographics %>%
-  select(idno, cntry, anweight, isco08, occf14b, occm14b, eisced,eiscedf,eiscedm, edition) %>%
-  filter(edition==2.0)
-
+  select(idno, cntry, anweight, iscoco, occf14, occm14, edulvla, edulvlfa, 
+         edulvlma, edition) %>%
+  filter(edition==6.7)
 
 df_ACM_2 <- ESS_Theme_Personal_and_household_characteristics%>%
   select(idno,gndr,agea, edition)%>%
-  filter(edition==2.0)
+  filter(edition==6.7)
 
 #On regroupe les données par identifiant répondant
 df_ACM_1_unique <- df_ACM_1 %>%
@@ -86,13 +82,14 @@ df_ACM <- df_ACM %>%
 
 df_ACM <- df_ACM %>%
   filter(
-    age != 999,
+    genre != 9,
     !education       %in% c(55,77,88, 99),
     !education_pere  %in% c(55,77, 88, 99),
-    !education_mere  %in% c(55,77, 88, 99)
+    !education_mere  %in% c(55,77, 88, 99),
+    age    != 999
   )
 
-
+  
 ################################################################################
 # Regroupement en 6 grandes CSP                                               #
 ###############################################################################
@@ -102,30 +99,41 @@ cores_enquete <- c(
   "1"= "C",
   "2"= "C",
   "3"= "PI",
-  "4"= "E",
-  "5"= "E",
+  "4"= "OQ",
+  "5"= "OQ",
+  "6"= "OQ",
+  "7"= "OQ",
+  "8"= "OQ",
+  "9"= "ONQ"
+)
+
+cores_enquete_avec_A <- c(
+  "1"= "C",
+  "2"= "C",
+  "3"= "PI",
+  "4"= "C",
+  "5"= "OQ",
   "6"= "A",
   "7"= "OQ",
   "8"= "OQ",
   "9"= "ONQ"
 )
 
-
 cores_parents <- c(
   "1"=  "C",
   "2"= "C",
   "3"= "PI",
-  "4"= "E",
-  "5"= "E",
+  "4"= "C",
+  "5"= "OQ",
   "6"= "OQ" ,
-  "7"="OQ",
-  "8"=  "ONQ",
-  "9"= "A"
+  "7"=  "ONQ",
+  "8"= "C"
 )
 
 df_ACM <- df_ACM %>%
   mutate(csp_père = recode(as.character(csp_père), !!!cores_parents))%>%
   mutate(csp_mère = recode(as.character(csp_mère), !!!cores_parents))%>%
+  mutate(csp_avec_A = recode(as.character(csp), !!!cores_enquete_avec_A))  %>%
   mutate(csp = recode(as.character(csp), !!!cores_enquete))
 
 ################################################################################
@@ -161,6 +169,7 @@ df_ACM <- df_ACM %>%
 
 
 write.csv(df_ACM, "~/work/Modelisation-statistique-Etude-de-la-mobilite-sociale/df_ACM.csv", row.names = FALSE)
+
 
 
 
