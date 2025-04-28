@@ -10,7 +10,7 @@ library(ggplot2)
 
 # Préparation du dataframe 
 df_ACM_essai <- df_ACM %>%
-  filter(genre == 1) %>%                             
+ filter(genre == 1) %>%                             
   droplevels() %>%                        
   # normalisation des poids entre 0 et 1
   mutate(poids = poids / mean(poids))  %>% 
@@ -33,8 +33,8 @@ df_clean <- df_ACM_essai %>%
   # on enlève toute ligne contenant NA
   filter(
     !is.na(mobilite),
-    !is.na(education_pere),
-    !is.na(education_mere),
+#    !is.na(education_pere),
+#    !is.na(education_mere),
     !is.na(pays),
     !is.na(genre)
   ) 
