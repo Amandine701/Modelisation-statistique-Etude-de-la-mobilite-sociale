@@ -98,7 +98,7 @@ df_ACM <- df_ACM %>%
 ###############################################################################
 
 # Dictionnaire de correspondance
-cores_enquete <- c(
+cores_enquete_avec_A <- c(
   "1"= "C",
   "2"= "C",
   "3"= "PI",
@@ -110,6 +110,19 @@ cores_enquete <- c(
   "9"= "ONQ"
 )
 
+cores_enquete <- c(
+  "1"= "C",
+  "2"= "C",
+  "3"= "PI",
+  "4"= "E",
+  "5"= "E",
+  "6"= "OQ",
+  "7"= "OQ",
+  "8"= "OQ",
+  "9"= "ONQ"
+)
+
+
 
 cores_parents <- c(
   "1"=  "C",
@@ -120,12 +133,13 @@ cores_parents <- c(
   "6"= "OQ" ,
   "7"="OQ",
   "8"=  "ONQ",
-  "9"= "A"
+  "9"= "OQ"
 )
 
 df_ACM <- df_ACM %>%
   mutate(csp_père = recode(as.character(csp_père), !!!cores_parents))%>%
   mutate(csp_mère = recode(as.character(csp_mère), !!!cores_parents))%>%
+  mutate(csp_avec_A = recode(as.character(csp), !!!cores_enquete_avec_A))%>%
   mutate(csp = recode(as.character(csp), !!!cores_enquete))
 
 ################################################################################
