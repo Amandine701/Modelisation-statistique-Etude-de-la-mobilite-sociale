@@ -11,20 +11,20 @@ library(tidyr)
 #      Représentation des variables dans l'espace factoriel                    #
 ################################################################################
 
-# 2. Extraire et préparer les coords des variables actives
+#  Extraire et préparer les coords des variables actives
 var_coord <- as.data.frame(res_acm$var$coord[, 1:2])
 colnames(var_coord) <- c("Dim1","Dim2")
 var_coord$Name <- rownames(res_acm$var$coord)
 var_coord$Type <- "Active"
 
-# 3. Extraire et préparer les coords des variables sup.
+#  Extraire et préparer les coords des variables sup.
 sup_coord <- as.data.frame(res_acm$quali.sup$coord[, 1:2])
 colnames(sup_coord) <- c("Dim1","Dim2")
 sup_coord$Name <- rownames(res_acm$quali.sup$coord)
 sup_coord$Type <- "Supplémentaire"
 
 
-# 4. Calculer le facteur d'étirement pour détailler les suppl.
+#  Calculer le facteur d'étirement pour détailler les suppl.
 ran_var1 <- diff(range(var_coord$Dim1))
 ran_sup1 <- diff(range(sup_coord$Dim1))
 ran_var2 <- diff(range(var_coord$Dim2))
@@ -37,7 +37,7 @@ sup_coord <- sup_coord %>%
     Dim2 = Dim2 * alpha
   )
 
-# 5. Fusionner
+#  Fusionner
 all_coord <- bind_rows(var_coord, sup_coord)
 
 # 6. Tracer

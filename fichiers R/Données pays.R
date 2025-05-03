@@ -7,7 +7,7 @@ library(corrplot)
 #                       Indicateurs socio-économiques                          #
 ################################################################################
 
- indicateurs <- tibble::tibble(
+indicateurs <- tibble::tibble(
    pays = c("Autriche", "Danemark", "Belgique", "Allemagne", "Grèce", "Pologne", 
             "Suède", "Suisse", "Grande-Bretagne", "Italie", "Pays-Bas", "Suisse", "Chypre",
             "Espagne", "Finlande", "France", "Grèce",  "Hongrie","Irelande","Lituanie",
@@ -150,7 +150,7 @@ library(corrplot)
  
  
  
- # 5. Joindre tous les résultats par pays
+ #  Joindre tous les résultats par pays
  df_pourcentages_par_pays <- csp_pourcents %>%
    full_join(edu_pourcents, by = "pays") %>%
  #  full_join(edu_pere_pourcents, by = "pays") %>%
@@ -177,10 +177,10 @@ library(corrplot)
  #Matrice de corrélation
  cor_matrix <- cor(df_corr, use = "pairwise.complete.obs", method = "pearson")
  
- # 3. Extraire seulement les lignes pour Dim 1 et Dim 2
+ #  Extraire seulement les lignes pour Dim 1 et Dim 2
  cor_sub <- cor_matrix[c("Dim 1", "Dim 2"), ]
  
- # 4. Affichage visuel : uniquement lignes Dim 1 et Dim 2, toutes les colonnes
+ #  Affichage visuel : uniquement lignes Dim 1 et Dim 2, toutes les colonnes
 
 corrplot(cor_sub, is.corr = FALSE, method = "color", tl.cex = 0.7, cl.cex = 0.7)
 

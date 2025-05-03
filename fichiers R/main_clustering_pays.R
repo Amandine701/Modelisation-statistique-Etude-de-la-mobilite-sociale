@@ -3,6 +3,10 @@ library(factoextra)
 library(mclust)
 library(dplyr)
 
+################################################################################
+#                       Clustering pays                                        #
+################################################################################
+
 # Extraire les coordonnées MCA et ajouter le pays
 coord_mca <- as.data.frame(res_acm$ind$coord[, 1:5])
 coord_mca$pays <- df_clean$pays
@@ -82,9 +86,24 @@ tableau_clusters <- classification_pays %>%
   ) %>%
   arrange(cah_cluster)
 
+################################################################################
+#             Calcul des coordonnées de chaque cluser                          #
+################################################################################
+
+# Décomposer les chaînes de pays en vecteurs
+clusters_long <- tableau_clusters %>%
+  mutate(pays = strsplit(pays, ",\\s*")) %>%  # transforme "A, B" en c("A", "B")
+  unnest(pays)                                # chaque pays sur sa propre ligne
 
 
-
+# Joindre les coordonnées aux clusters
+coord_clusters <- clusters_long %>%
+  left_join(data_centroids_df, by = "pays") %>%
+  group_by(cah_cluster) %>%
+  summarise(
+    Dim1 = mean(`Dim 1`, na.rm = TRUE),
+    Dim2 = mean(`Dim 2`, na.rm = TRUE)
+  )
 
 
 
