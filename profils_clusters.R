@@ -127,7 +127,7 @@ socioeco_summary <- socioeco_cluster %>%
 
 #Moyenne pour l'ensemble des clusters
 socioeco_global <- socioeco_cluster %>%
-  ungroup() %>%  # <- très important
+  ungroup() %>%  
   select(where(is.numeric), -cah_cluster) %>%  # sélectionne uniquement les colonnes numériques
   summarise(across(everything(), mean, na.rm = TRUE)) %>%
   pivot_longer(cols = everything(), names_to = "variable", values_to = "moyenne_globale")
@@ -140,13 +140,6 @@ table_socioeco <- socioeco_summary %>%
     TRUE ~ paste0("\\textcolor{pink}{", round(moyenne_cluster), "}")
   ))
 
-# Génère les lignes LaTeX une par une
-latex_rows_se <- apply(table_latex_se, 1, function(row) {
-  paste(
-    row["variable"], "&", row["moyenne_globale"], "&",
-    row["1"], "&", row["2"], "&", row["3"], "&", row["4"], "\\\\"
-  )
-})
 
 # Crée le tableau complet
 table_latex_se <- table_socioeco %>%
@@ -182,19 +175,79 @@ latex_table_se <- c(
 
 cat(latex_table_se, sep = "\n")
 
-latex_table_se <- c(
+
+################################################################################
+# caractéristiques socio-eco par pays                                        #
+################################################################################
+#Moyenne pour l'ensemble des clusters
+library(dplyr)
+library(tidyr)
+
+#  Calcul des moyennes globales
+df_pourcentages_par_pays_global <- df_pourcentages_par_pays %>%
+  ungroup() %>%
+  summarise(across(where(is.numeric), mean, na.rm = TRUE)) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "moyenne_globale")
+
+#  Mise au format long des données par pays
+df_pays_long <- df_pourcentages_par_pays %>%
+  pivot_longer(cols = where(is.numeric), names_to = "variable", values_to = "valeur_pays")
+
+#  Fusion avec les moyennes globales
+df_comparatif <- df_pays_long %>%
+  left_join(df_pourcentages_par_pays_global, by = "variable") %>%
+  mutate(color_val = case_when(
+    is.na(valeur_pays) ~ "",
+    valeur_pays > moyenne_globale ~ paste0("\\cellcolor{blue!15}", round(valeur_pays, 1)),
+    valeur_pays <= 5 ~ paste0("\\cellcolor{gray!15}", round(valeur_pays, 1)),
+    TRUE ~ paste0("\\cellcolor{red!15}", round(valeur_pays, 1))
+  ))
+
+df_comparatif_clean <- df_comparatif %>%
+  ungroup() %>%
+  distinct(variable, code_pays, .keep_all = TRUE)
+
+
+
+#  Créer la table large pour LaTeX
+table_latex_pays <- df_comparatif_clean %>%
+  select(code_pays, variable, color_val) %>%
+  pivot_wider(names_from = code_pays, values_from = color_val) %>%
+  left_join(df_pourcentages_par_pays_global, by = "variable") %>%
+  mutate(moyenne_globale = paste0("\\textbf{", round(moyenne_globale, 1), "}")) %>%
+  select(variable, moyenne_globale, everything())
+
+#  Identifier dynamiquement les colonnes des pays
+pays_cols <- setdiff(colnames(table_latex_pays), c("variable", "moyenne_globale"))
+
+# 4. Générer les lignes LaTeX
+latex_rows <- apply(table_latex_pays, 1, function(row) {
+  paste(
+    row["variable"], "&", row["moyenne_globale"], "&",
+    paste(row[pays_cols], collapse = " & "), "\\\\"
+  )
+})
+
+# 5. Générer le tableau complet
+latex_table <- c(
   "\\begin{table}[H]",
   "\\footnotesize",
-  "\\begin{tabular}{p{5cm}|c|cccc}",
-  "\\multicolumn{1}{c}{} & \\textbf{Ensemble} & Cluster 1 & Cluster 2 & Cluster 3 & Cluster 4 \\\\",
+  paste0("\\begin{tabular}{p{4.5cm}|c|", paste(rep("c", length(pays_cols)), collapse = ""), "}"),
+  paste0("\\multicolumn{1}{c}{} & \\textbf{Moyenne} & ", paste0(pays_cols, collapse = " & "), " \\\\"),
   "\\hline",
-  latex_rows_se,
+  latex_rows,
   "\\end{tabular}",
-  "\\caption{Comparaison des moyennes des variables socio-économiques par cluster.\\newline \\textit{Note : En bleu les valeurs supérieures à la moyenne globale, en rose les inférieures, en gris celles ≤ 5\\%.}}",
-  "\\label{tab:socioeco_clusters}",
+  "\\caption{Comparaison des indicateurs socio-économiques par pays.\\newline \\textit{Note : En bleu les valeurs supérieures à la moyenne globale, en rose les inférieures, en gris celles ≤ 5.}}",
+  "\\label{tab:socioeco_pays}",
   "\\end{table}"
 )
 
-cat(latex_table_se, sep = "\n")
+# tableau_tex est un vecteur de lignes LaTeX ou une chaîne unique
+
+latex_table <- gsub("\\\\cellcolor\\{blue!15\\}(\\d+(\\.\\d+)?)", "\\\\textcolor{blue}{\\1}", latex_table )
+latex_table  <- gsub("\\\\cellcolor\\{red!15\\}(\\d+(\\.\\d+)?)", "\\\\textcolor{red}{\\1}", latex_table )
+latex_table  <- gsub("\\\\cellcolor\\{gray!15\\}(\\d+(\\.\\d+)?)", "\\\\textcolor{gray}{\\1}", latex_table )
 
 
+# 6. Affichage du code LaTeX
+cat(latex_table, sep = "\n")
